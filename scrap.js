@@ -92,7 +92,8 @@ async function saveFile(httpResponse, downloadPath) {
       }
 
       if (!filename) filename = decodeURIComponent(path.basename(urlModule.parse(httpResponse.url).pathname));
-      if (!filename) return reject('no file')
+      filename = path.basename(filename.replace(/\\/g, '/'));
+      if (!filename || filename === '.' || filename === '..') return reject('no file');
 
       const uniqueDownloadPath = filename ? getUniqueFileName(path.join(downloadPath, filename)) : getUniqueFileName(downloadPath);
       console.log(`Saving file to ${uniqueDownloadPath}`);
@@ -143,7 +144,7 @@ async function scrap(webpageUrl, scrapingUrlPattern, filePattern, downloadLocati
       if (!info.downloaded) {
         info.downloaded = true;
 
-        console.log(`Downloading webpage(${depth}): ${webpageUrl}`);
+        console.log(`Downloading webpage(${depth}): ${JSON.stringify(webpageUrl)}`);
         const response/* : Response */ = await downloadWebpage(webpageUrl).catch(err => console.error(`Error downloading webpage: ${webpageUrl}`, err));
 
         if (!response || !response.statusCode || response.statusCode >= 300 || !response.body || !response.body.length) return resolve([]);
@@ -158,7 +159,7 @@ async function scrap(webpageUrl, scrapingUrlPattern, filePattern, downloadLocati
         href = href.replace(/&amp;/g, '&');
 
         if ((!visitedUrls.get(href) || !visitedUrls.get(href).downloaded) && (filePattern.test(href))) {
-          console.log(`Saving file: ${href}`);
+          console.log(`Saving file: ${JSON.stringify(href)}`);
           try {
             const response = await downloadWebpage(href, 100 * MB).catch(err => console.error(`Error downloading webpage: ${href}`, err));
             if (response.statusCode >= 300 || !response.body || !response.body.length) continue;
