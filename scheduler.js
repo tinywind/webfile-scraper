@@ -1,4 +1,5 @@
 const fs = require('fs');
+const logValue = require('./log-value');
 const path = require('path');
 const scrap = require('./scrap');
 
@@ -29,12 +30,12 @@ async function runScrap(config, skippedUrls) {
             skippedUrls.forEach((value, key) => clonedSkippedUrls.set(key, value));
 
             const downloadedFiles = await scrap(url, scrapingUrlPatternExp, filePatternExp, downloadLocation, depth, clonedSkippedUrls);
-            console.log('Downloaded files for', url, ':', downloadedFiles);
+            console.log('Downloaded files for', logValue(url), ':', logValue([...downloadedFiles]));
 
             downloadedFiles.forEach(fileUrl => skippedUrls.set(fileUrl, {depth: 0, downloaded: true, isFile: true, links: []}));
             fs.writeFileSync(dbPath, JSON.stringify(Array.from(skippedUrls.keys())));
         } catch (err) {
-            console.error(`Error running scrap function for ${url}:`, err);
+            console.error(`Error running scrap function for ${logValue(url)}:`, logValue(String(err)));
         }
     }
 }

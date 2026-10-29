@@ -69,6 +69,18 @@ test('scraper CLI and scheduler preserve safe download paths', async t => {
     assert.equal(fileRequests, 2);
   });
 
+  await t.test('remote URLs cannot insert CR, LF or Unicode line breaks into error logs', async () => {
+    link = 'http://127.0.0.1:0/\r\nFORGED\u2028FORGED\u2029.zip';
+    const directory = path.join(root, 'log-downloads');
+    fs.mkdirSync(directory);
+    const output = await run('scrap.js', [base + '/page', '^' + base, '\\.zip$', directory, '0']);
+    assert.equal(output.includes('\u2028'), false);
+    assert.equal(output.includes('\u2029'), false);
+    assert.equal(output.includes('\r'), false);
+    assert.equal(output.split('\n').some(line => line.startsWith('FORGED')), false);
+    assert.match(output, /Error downloading webpage/);
+  });
+
   for (const [name, remoteLink, header, filename] of [
     ['parent path in response header', '/file.zip', 'attachment; filename="../escaped.zip"', 'escaped.zip'],
     ['Windows path in response header', '/file.zip', 'attachment; filename="..\\escaped-windows.zip"', 'escaped-windows.zip'],

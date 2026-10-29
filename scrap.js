@@ -1,4 +1,5 @@
 const https = require('https');
+const logValue = require('./log-value');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
@@ -96,7 +97,7 @@ async function saveFile(httpResponse, downloadPath) {
       if (!filename || filename === '.' || filename === '..') return reject('no file');
 
       const uniqueDownloadPath = filename ? getUniqueFileName(path.join(downloadPath, filename)) : getUniqueFileName(downloadPath);
-      console.log(`Saving file to ${uniqueDownloadPath}`);
+      console.log(`Saving file to ${logValue(uniqueDownloadPath)}`);
 
       await fs.writeFileSync(uniqueDownloadPath, body);
       resolve(uniqueDownloadPath);
@@ -126,7 +127,7 @@ function getActualUrl(urlString) {
     const url = new URL(urlString);
     return url.origin + url.pathname + url.search;
   } catch (error) {
-    console.error('Invalid URL:', urlString);
+    console.error('Invalid URL:', logValue(urlString));
     return null;
   }
 }
@@ -144,8 +145,8 @@ async function scrap(webpageUrl, scrapingUrlPattern, filePattern, downloadLocati
       if (!info.downloaded) {
         info.downloaded = true;
 
-        console.log(`Downloading webpage(${depth}): ${JSON.stringify(webpageUrl)}`);
-        const response/* : Response */ = await downloadWebpage(webpageUrl).catch(err => console.error(`Error downloading webpage: ${webpageUrl}`, err));
+        console.log(`Downloading webpage(${depth}): ${logValue(webpageUrl)}`);
+        const response/* : Response */ = await downloadWebpage(webpageUrl).catch(err => console.error(`Error downloading webpage: ${logValue(webpageUrl)}`, logValue(String(err))));
 
         if (!response || !response.statusCode || response.statusCode >= 300 || !response.body || !response.body.length) return resolve([]);
         info.links = extractLinks(response.body).map(e => e.href);
@@ -159,15 +160,15 @@ async function scrap(webpageUrl, scrapingUrlPattern, filePattern, downloadLocati
         href = href.replace(/&amp;/g, '&');
 
         if ((!visitedUrls.get(href) || !visitedUrls.get(href).downloaded) && (filePattern.test(href))) {
-          console.log(`Saving file: ${JSON.stringify(href)}`);
+          console.log(`Saving file: ${logValue(href)}`);
           try {
-            const response = await downloadWebpage(href, 100 * MB).catch(err => console.error(`Error downloading webpage: ${href}`, err));
+            const response = await downloadWebpage(href, 100 * MB).catch(err => console.error(`Error downloading webpage: ${logValue(href)}`, logValue(String(err))));
             if (response.statusCode >= 300 || !response.body || !response.body.length) continue;
-            await saveFile(response, downloadLocation).catch(err => console.error(`Error downloading file: ${href}`, err));
+            await saveFile(response, downloadLocation).catch(err => console.error(`Error downloading file: ${logValue(href)}`, logValue(String(err))));
             downloadedFiles.add(href);
             visitedUrls.set(href, {depth: 0, downloaded: true, isFile: true, links: []});
           } catch (downloadErr) {
-            console.error(`Error processing download for ${href}: ${downloadErr}`);
+            console.error(`Error processing download for ${logValue(href)}: ${logValue(String(downloadErr))}`);
           }
         }
 
@@ -215,6 +216,6 @@ if (require.main === module) {
   }
 
   scrap(webpageUrl, scrapingUrlPattern, filePattern, downloadLocation, depth).then(downloadedFiles => {
-    console.log('Downloaded files:', downloadedFiles);
+    console.log('Downloaded files:', logValue([...downloadedFiles]));
   });
 }
