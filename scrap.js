@@ -164,7 +164,7 @@ async function scrap(webpageUrl, scrapingUrlPattern, filePattern, downloadLocati
           try {
             const response = await downloadWebpage(href, 100 * MB).catch(err => console.error(`Error downloading webpage: ${logValue(href)}`, logValue(String(err))));
             if (response.statusCode >= 300 || !response.body || !response.body.length) continue;
-            await saveFile(response, downloadLocation).catch(err => console.error(`Error downloading file: ${logValue(href)}`, logValue(String(err))));
+            await saveFile(response, downloadLocation);
             downloadedFiles.add(href);
             visitedUrls.set(href, {depth: 0, downloaded: true, isFile: true, links: []});
           } catch (downloadErr) {
