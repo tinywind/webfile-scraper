@@ -39,6 +39,8 @@ out/
 .vscode/
 *.lock
 node_modules
+/.tmp/
+/.serena/
 .env
 config.private.js
 *.db
