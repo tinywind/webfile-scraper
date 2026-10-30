@@ -1,7 +1,6 @@
-version: '3.8'
-
 services:
   scheduler:
+    image: tinywind0/webfile-scraper:0.1.2
     build: .
     volumes:
       - ./config.json:/config.json
