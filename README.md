@@ -1,12 +1,12 @@
-# Node.js Webpage Scraper
+# Webfile Scraper
 
-This Node.js script scrapes a webpage for `<a>` tags with links matching a specified pattern and downloads the linked files to a specified directory.
+Webfile Scraper is a Node.js command-line tool that follows matching page links
+and downloads matching linked files to a chosen directory. It also includes a
+configurable scheduler.
 
 Release `0.1.2` uses Node.js `26.13.0`. The application uses only Node.js built-in modules; no npm packages need to be installed.
 
 ## Usage
-
-To run the script, use the following command:
 
 ```bash
 node scrap.js <webpage URL> <scrapingUrl RegExp pattern> <file RegExp pattern> <local download location:optional, defaults to current folder> <depth:optional, defaults to 1>
@@ -28,11 +28,11 @@ Supply the page URL, crawl pattern, and file pattern. Set the destination and de
 node scrap.js https://example.com/files/ '^https://example\.com/' '\.zip$' ./downloads 1
 ```
 
-## Scheduler Usage
+## Scheduler usage
 
 A scheduler script (`scheduler.js`) is included to periodically run the scraper based on a configuration file.
 
-### Configuration File
+### Configuration file
 
 The configuration file can be in JSON or JavaScript format and should include the following properties:
 
@@ -53,7 +53,7 @@ The configuration file can be in JSON or JavaScript format and should include th
   "webpageUrls": [
     {
       "url": "https://example.com",
-      "scrapingUrlPattern": "YOUR_FIRST_SCRAPE_URL",
+      "scrapingUrlPattern": "^https://example\\.com/",
       "filePattern": ".*\\.torrent$",
       "depth": 2
     },
@@ -71,9 +71,7 @@ The configuration file can be in JSON or JavaScript format and should include th
 }
 ```
 
-### Running the Scheduler
-
-To run the scheduler with the configuration file:
+### Run the scheduler
 
 ```bash
 node scheduler.js <config file>
@@ -85,25 +83,23 @@ Example:
 node scheduler.js ./config.json
 ```
 
-## Docker Usage
+## Docker usage
 
-You can use Docker to run the scheduler in a container. This can simplify the environment setup and ensure consistency.
+Run the scheduler in Docker using a mounted configuration and download directory.
 
-### Docker Hub Image
+### Docker Hub image
 
 The Docker image is available on Docker Hub: [tinywind0/webfile-scraper](https://hub.docker.com/r/tinywind0/webfile-scraper)
 
-#### Pulling the Docker Image
+#### Pull the Docker image
 
 ```bash
 docker pull tinywind0/webfile-scraper:0.1.2
 ```
 
-#### Running the Docker Container
+#### Run the Docker container
 
 Set `downloadLocation` to `/downloads` and `dbPath` to `/downloads/scrap.db` in the mounted configuration. Both downloaded files and scheduler state then persist in the host directory.
-
-To run the Docker container:
 
 ```bash
 mkdir -p downloads
@@ -114,21 +110,17 @@ docker run --rm -v "$(pwd)/config.json:/config.json:ro" -v "$(pwd)/downloads:/do
 
 A `Dockerfile` is provided to build the Docker image. See the [Dockerfile](./Dockerfile) for details.
 
-### Docker Compose (Optional)
+### Docker Compose (optional)
 
 A `docker-compose.yml` file can be used for easier management. See the [docker-compose.yml](./docker-compose.yml) for details.
 
-### Building the Docker Image
-
-To build the Docker image, run:
+### Build the Docker image
 
 ```bash
 docker build --pull -t webfile-scraper:0.1.2 .
 ```
 
-### Using Docker Compose
-
-To use Docker Compose, run:
+### Run with Docker Compose
 
 ```bash
 docker compose up --build
@@ -173,5 +165,3 @@ LIABILITY, WHETHER IN AN ACTION OF CONTRACT, TORT OR OTHERWISE, ARISING FROM,
 OUT OF OR IN CONNECTION WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE
 SOFTWARE.
 ```
-
----
