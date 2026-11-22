@@ -127,3 +127,31 @@ test('scheduler accepts JavaScript config and preserves state across restarts', 
   assert.equal(fs.readFileSync(path.join(directory, 'state.zip'), 'utf8'), 'persistent download');
   assert.deepEqual(fs.readdirSync(directory), ['state.zip']);
 });
+
+test('CLI resolves relative links and ignores malformed hrefs without deprecation warnings', async t => {
+  const temporary = path.join(project, '.tmp');
+  fs.mkdirSync(temporary, {recursive: true});
+  const root = fs.mkdtempSync(path.join(temporary, 'url-test-'));
+  const server = http.createServer((request, response) => {
+    if (request.url === '/dir/page') {
+      response.end('<a href="//[invalid">Broken</a><a href="../files/ok.zip">Good</a>');
+    } else if (request.url === '/files/ok.zip') {
+      response.end('whatwg url download');
+    } else {
+      response.statusCode = 404;
+      response.end('not found');
+    }
+  });
+  await new Promise(resolve => server.listen(0, '127.0.0.1', resolve));
+  t.after(async () => {
+    await new Promise(resolve => server.close(resolve));
+    fs.rmSync(root, {recursive: true, force: true});
+  });
+  const base = 'http://127.0.0.1:' + server.address().port;
+  const directory = path.join(root, 'downloads');
+  const result = await run('scrap.js', [base + '/dir/page', '^' + base, '\\.zip$', directory, '0']);
+  assert.equal(result.code, 0, result.output);
+  assert.doesNotMatch(result.output, /DeprecationWarning|DEP0169/);
+  assert.equal(fs.readFileSync(path.join(directory, 'ok.zip'), 'utf8'), 'whatwg url download');
+  assert.deepEqual(fs.readdirSync(directory), ['ok.zip']);
+});

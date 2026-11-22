@@ -3,8 +3,6 @@ const logValue = require('./log-value');
 const http = require('http');
 const fs = require('fs');
 const path = require('path');
-const urlModule = require('url');
-const v8 = require('v8');
 
 const MB = 1024 * 1024;
 
@@ -92,7 +90,7 @@ async function saveFile(httpResponse, downloadPath) {
         }
       }
 
-      if (!filename) filename = decodeURIComponent(path.basename(urlModule.parse(httpResponse.url).pathname));
+      if (!filename) filename = decodeURIComponent(path.basename(new URL(httpResponse.url).pathname));
       filename = path.basename(filename.replace(/\\/g, '/'));
       if (!filename || filename === '.' || filename === '..') return reject('no file');
 
@@ -132,6 +130,14 @@ function getActualUrl(urlString) {
   }
 }
 
+function resolveUrl(baseUrl, href) {
+  try {
+    return new URL(href, baseUrl).href;
+  } catch (error) {
+    return null;
+  }
+}
+
 async function scrap(webpageUrl, scrapingUrlPattern, filePattern, downloadLocation, depth, visitedUrls = new Map()) {
   return new Promise(async (resolve, reject) => {
     setTimeout(async () => {
@@ -155,8 +161,8 @@ async function scrap(webpageUrl, scrapingUrlPattern, filePattern, downloadLocati
 
       const downloadedFiles = new Set();
       for (let href of info.links) {
-        if (!href.startsWith('http://') && !href.startsWith('https://')) href = urlModule.resolve(webpageUrl, href);
-        if (!href.startsWith('http://') && !href.startsWith('https://')) continue;
+        if (!href.startsWith('http://') && !href.startsWith('https://')) href = resolveUrl(webpageUrl, href);
+        if (!href || (!href.startsWith('http://') && !href.startsWith('https://'))) continue;
         href = href.replace(/&amp;/g, '&');
 
         if ((!visitedUrls.get(href) || !visitedUrls.get(href).downloaded) && (filePattern.test(href))) {
