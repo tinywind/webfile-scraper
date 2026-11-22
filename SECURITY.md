@@ -9,7 +9,7 @@ Security fixes are applied on `main` and released on the `0.1.x` line (currently
 | `0.1.x` (`main`) | Yes |
 | `< 0.1.0` | No |
 
-Supported runtime is Node.js `26.x` (built against Node.js `26.13.0` with no external npm dependencies).
+Supported runtime is Node.js `26.x` (built against Node.js `26.13.1` with no external npm dependencies).
 
 ## Reporting a Vulnerability
 

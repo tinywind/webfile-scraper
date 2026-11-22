@@ -1,7 +1,8 @@
 FROM node:26.13.1-trixie-slim@sha256:e6bedef217677b276c591795e169840edd9096dbf13f29df8ef8d1856b8820bc
 
+ARG IMAGE_VERSION=0.1.2
 ARG VCS_REF=unknown
-LABEL org.opencontainers.image.version="0.1.2" \
+LABEL org.opencontainers.image.version="${IMAGE_VERSION}" \
       org.opencontainers.image.revision="${VCS_REF}" \
       org.opencontainers.image.source="https://github.com/tinywind/webfile-scraper"
 

@@ -126,6 +126,18 @@ docker build --pull -t webfile-scraper:0.1.2 .
 docker compose up --build
 ```
 
+### Automated Docker Hub publishing (GitHub Actions)
+
+The [Publish Docker image](./.github/workflows/docker-publish.yml) workflow runs the packaged test suite and builds multi-architecture (`linux/amd64`, `linux/arm64`) images for `tinywind0/webfile-scraper`.
+
+- On `main` pushes and pull requests, the workflow verifies the multi-architecture build without pushing.
+- On `v*` tag pushes or manual `workflow_dispatch` runs, the workflow logs in to Docker Hub and publishes versioned and `latest` tags (prerelease tags skip `latest`).
+
+Configure these repository secrets under **Settings → Secrets and variables → Actions** before publishing:
+
+- `DOCKERHUB_USERNAME`: Docker Hub username (`tinywind0`)
+- `DOCKERHUB_TOKEN`: Docker Hub Personal Access Token with Read & Write permissions
+
 ## Tests
 
 Run the CLI, scheduler, persistence, retry, and download-path regression tests:
